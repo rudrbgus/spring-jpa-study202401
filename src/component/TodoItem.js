@@ -1,14 +1,14 @@
 import React from 'react';
-import {MdDelete, MdDone} from "react-icons/md";
+import {MdDelete, MdDone, MdDoNotDisturb} from "react-icons/md";
 import './scss/TodoItem.scss'
 
-const TodoItem = () => {
+const TodoItem = ({item}) => {
     return (
         <li className='todo-list-item'>
             <div className='check-circle'>
-                <MdDone/>
+                {item.done ? <MdDone/> : <MdDoNotDisturb />}
             </div>
-            <span className='text'>할 일 어쩌구~~</span>
+            <span className='text'>{item.title}</span>
             <div className='remove'>
                 <MdDelete/>
             </div>
