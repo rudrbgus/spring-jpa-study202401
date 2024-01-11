@@ -9,7 +9,7 @@ const TodoItem = ({item}) => {
     return (
         <li className='todo-list-item'>
             <div className={cn('check-circle', {"active": done})}>
-                {done ? <MdDone/> : <MdDoNotDisturb />}
+                {done && <MdDone/>}
             </div>
             <span className={cn('text', {"finish":done})}>{title}</span>
             <div className='remove'>
