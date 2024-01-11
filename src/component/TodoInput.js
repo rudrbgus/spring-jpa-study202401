@@ -11,22 +11,23 @@ const TodoInput = ({onAdd}) => {
     // 할 일 입력창에 입력한 내용을 저장할 변수
     const [todoText, setTodoText] = useState('');
 
+
     const onToggle = () => {
         setOpen(!open);
     }
 
-    const todoChangeHandler = (e) =>{
+    const todoChangeHandler = (e) => {
         // console.log(e.target.value);
         // onAdd(e.target.value);
         setTodoText(e.target.value);
     };
-    const submitHandler = e =>{
+    const submitHandler = e => {
         e.preventDefault();
 
         onAdd(todoText);
 
         // 폼이 제출되면 입력창 비우기
-        e.target.firstChild.value='';
+        setTodoText('');
 
     }
 
@@ -40,6 +41,7 @@ const TodoInput = ({onAdd}) => {
                             type='text'
                             placeholder='할 일을 입력 후, 엔터를 누르세요!'
                             onChange={todoChangeHandler}
+                            value={todoText}
                         />
                     </form>
                 </div>)
