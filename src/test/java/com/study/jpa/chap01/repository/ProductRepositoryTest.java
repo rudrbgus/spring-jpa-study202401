@@ -90,12 +90,26 @@ class ProductRepositoryTest {
         //given
         long id = 3L;
         //when
-        Product product = productRepository.findById(id).get();
+        Optional<Product> product = productRepository.findById(id);
         //then
         System.out.println("product = " + product);
 
-        assertEquals("구두", product.getName());
-        assertNotNull(product);
+        // 널 체크를 간소화하기 위한 Optional타입
+        // ifPresent는 null이 아니면 람다의 코드 진행, null이면 무시
+        product.ifPresent(p ->{
+            assertEquals("구두", p.getName());
+            assertNotNull(p);
+        });
+
+        // product가 null이면 새로운 new Product를 반환
+        // null이 아니면 optional안에서 꺼내서 반환
+        product.orElse(new Product());
+
+        // null이면 예외를 발생, null이 아니면 Optional에서 꺼내서 반환
+        product.orElseThrow();
+
+
+
     }
 
 
