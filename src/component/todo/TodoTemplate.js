@@ -3,11 +3,12 @@ import "./scss/TodoTemplate.scss";
 import TodoHeader from "./TodoHeader";
 import TodoInput from "./TodoInput";
 import TodoMain from "./TodoMain";
+import {TODO_URL} from "../config/host-config";
 
 const TodoTemplate = () => {
 
     // 서버에서 할 일 목록 (JSON)을 요청해서 받아와야 함
-    const API_BASE_URL = "http://localhost:8282/api/todos";
+    const API_BASE_URL = TODO_URL;
 
     /*
         리액트는 부모컴포넌트에서 자식컴포넌트로의 데이터이동이 반대보다 쉽기 때문에
