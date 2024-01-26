@@ -3,9 +3,29 @@ import "./scss/TodoTemplate.scss";
 import TodoHeader from "./TodoHeader";
 import TodoInput from "./TodoInput";
 import TodoMain from "./TodoMain";
-import {TODO_URL} from "../config/host-config";
+import {TODO_URL, AUTH_URL} from "../config/host-config";
+import {getCurrentLoginUser, ROLE, TOKEN} from "../util/login-util";
+import header from "../layout/header";
+import {useNavigate} from "react-router-dom";
+import { Spinner } from "reactstrap";
 
 const TodoTemplate = () => {
+
+    // 로딩 완료 상태값 관리
+    const [ loading, setLoading] = useState(true);
+
+    const redirection = useNavigate();
+
+
+    // 토큰 가져오기
+    const [token, setToken] = useState(getCurrentLoginUser().token);
+
+    // 요청 헤더 객체
+    const requestHeader = {
+        'content-type': 'application/json',
+        "Authorization": 'Bearer '+token
+    };
+
 
     // 서버에서 할 일 목록 (JSON)을 요청해서 받아와야 함
     const API_BASE_URL = TODO_URL;
@@ -30,14 +50,17 @@ const TodoTemplate = () => {
 
         fetch(API_BASE_URL, {
             method: "POST",
-            headers: {
-                'content-type': 'application/json'
-            },
+            headers: requestHeader,
             body: JSON.stringify(newTodo)
         })
-            .then(res=>res.json())
+            .then(res=>{
+                if(res.status ===200) return res.json();
+                else if(res.status === 401){
+                    alert('일반 회원은 일정 등록이 5개로 제한됩니다! 프리미엄회원이 되어보세요!');
+                }
+            })
             .then(json=>{
-                setTodoList(json.todos)
+                json && setTodoList(json.todos)
             })
     }
 
@@ -57,7 +80,8 @@ const TodoTemplate = () => {
         //setTodoList(todoList.filter(todo=>todo.id !== id));
 
         fetch(API_BASE_URL+'/'+id, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: requestHeader
         }).then(res=>res.json())
             .then(json=>{
                 setTodoList(json.todos);
@@ -76,9 +100,7 @@ const TodoTemplate = () => {
 
         fetch(API_BASE_URL, {
             method: "PUT",
-            headers: {
-                'content-type': 'application/json'
-            },
+            headers: requestHeader,
             body: JSON.stringify({
                 id: id,
                 done: !done
@@ -92,22 +114,83 @@ const TodoTemplate = () => {
     // 체크가 안된 할일 개수 카운트하기
     const countRestTodo = todoList.filter(todo=>todo.done === false).length;
 
+    // 등급을 올리는 서버 비동기 통신 함수
+    const fetchPromote= async () =>{
+      const res = await fetch(AUTH_URL+"/promote", {
+          method: 'PUT',
+          headers: requestHeader
+      });
+      if(res.status ===200){
+          const json = await res.json();
+
+          //토큰 데이터 갱신
+          localStorage.setItem(TOKEN, json.token);
+          localStorage.setItem(ROLE, json.role);
+          setToken(json.token);
+      }else{
+          alert("로그인이 필요한 서비스입니다")
+      }
+
+    };
+
+
+    // 등급을 상승시키는 함수
+    const promote = () =>{
+        console.log("등급 올려줘?");
+        fetchPromote();
+    }
+
     useEffect(() => {
-        fetch(API_BASE_URL)
-            .then(res=> res.json())
+        fetch(API_BASE_URL,{
+            method : "GET",
+            headers: requestHeader
+        })
+            .then(res=> {
+                if(res.status===200) return res.json();
+                else if(res.status === 403){
+                    alert("로그인이 필요한 서비스 입니다.");
+                    redirection('/login');
+                    return;
+                }else{
+                    alert('서버가 불안정합니다.');
+                    return;
+                }
+            })
             .then(json=>{
                 // console.log(json)
+                if(!json) return;
                 setTodoList(json.todos);
+
+                // 로딩 완료 처리
+                setLoading(false);
             })
     }, []);
 
 
-    return (
+    // 로딩이 끝난 후 보여줄 화면
+    const loadEndedPage = (
         <div className='TodoTemplate'>
-            <TodoHeader count={countRestTodo}/>
+            <TodoHeader count={countRestTodo} onPromote = {promote}/>
             <TodoMain todoList={todoList} onRemove={removeTodo} onCheck={checkTodo}/>
             <TodoInput onAdd={addTodo}/>
         </div>
+    );
+
+    // 로딩중일 때 보여줄 페이지
+    const loadingPage = (
+        <div className='loading'>
+        <Spinner animation="border" role="status">
+            loading...
+        </Spinner>
+        </div>
+    );
+
+    return (
+        <>
+            {/*{loadingPage}*/}
+
+            {loading ? loadingPage:loadEndedPage }
+        </>
     );
 };
 

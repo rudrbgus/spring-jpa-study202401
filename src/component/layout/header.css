@@ -9,9 +9,11 @@
     outline: none;
     border: none;
     background: transparent;
+    font-size: 24px;
 }
 .btn-group a:hover
 , .logout-btn:hover {
     color: #333;
     font-weight: 700;
+    font-size: 24px;
 }

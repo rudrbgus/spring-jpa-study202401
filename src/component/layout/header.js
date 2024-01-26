@@ -1,8 +1,25 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {AppBar, Toolbar, Grid, Typography, Button} from "@mui/material";
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
+import {isLogin, getCurrentLoginUser, TOKEN} from "../util/login-util";
+
 import "./header.css";
 const Header = () => {
+    const redirection = useNavigate();
+    const [title, setTitle] = useState("");
+    useEffect(() => {
+            if(isLogin()) {
+                setTitle(getCurrentLoginUser().username + '님 의 할 일');
+            }else{
+                setTitle("오늘의 할 일");
+            }
+    }, [localStorage.getItem(TOKEN)]);
+
+    const logoutHandler = e =>{
+        localStorage.clear();
+        redirection('/login');
+    }
+
     return (
         <AppBar position="fixed" style={{
             background: '#38d9a9',
@@ -18,15 +35,30 @@ const Header = () => {
                             }
                         }>
                             <Typography variant="h4">
-                                <Link to="/">오늘의 할 일</Link>
+                                <Link to="/">
+                                    {title}
+                                </Link>
                             </Typography>
                         </div>
                     </Grid>
 
                     <Grid item>
                         <div className='btn-group'>
-                            <Link to='/login'>로그인</Link>
-                            <Link to='/join'>회원가입</Link>
+                            {
+                                isLogin()?
+                                    (
+                                        <button
+                                            className='logout-btn'
+                                            onClick={logoutHandler}
+                                        >로그아웃</button>
+                                    ):
+                                    (
+                                        <>
+                                            <Link to='/login'>로그인</Link>
+                                            <Link to='/join'>회원가입</Link>
+                                        </>
+                                    )
+                            }
                         </div>
                     </Grid>
 
